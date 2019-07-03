@@ -6,10 +6,11 @@ set(TARGET yrgb2019)
 set(TARGET_VERSION "0.0.1")
 
 set(MAIN_CODE_LOC 32768)
+set(DATA_LOC 61440)
 
 project(${TARGET})
 
-set(CMAKE_C_FLAGS "-mz80 --no-std-crt0 --vc --code-loc ${MAIN_CODE_LOC}")
+set(CMAKE_C_FLAGS "-mz80 --no-std-crt0 --vc --code-loc ${MAIN_CODE_LOC} --data-loc ${DATA_LOC}  --std-sdcc99")
 
 file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.c")
 add_executable( ${TARGET} ${SOURCES})
