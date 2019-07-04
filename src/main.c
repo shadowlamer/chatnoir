@@ -1,3 +1,5 @@
+#include <string.h>
+
 #define SCREEN_PIXEL_WIDTH 256
 #define SCREEN_PIXEL_HEIGHT 192
 #define PIXELS_PER_LINE 8
@@ -49,6 +51,9 @@ const char sine[256] = {   0,   3,   6,   9,  12,  16,  19,  22,  25,  28,  31, 
                          -92, -90, -88, -85, -83, -81, -78, -76, -73, -71, -68, -65, -63, -60, -57, -54,
                          -51, -49, -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12,  -9,  -6 };
 
+const unsigned char bushSprite[8] = {15, 49, 69, 137, 146, 66, 100, 152};
+const unsigned char textureSprite[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
 __sfr __banked __at 0xf7fe joystickKeysPort;
 
 unsigned int playerX;
@@ -63,9 +68,12 @@ void renderWalls();
 void calculateWalls();
 unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle);
 char getMapAt(unsigned int x, unsigned int y);
+void putSprite(unsigned char x, unsigned char y, char *sprite);
 
 void main()
 {
+    unsigned char i, j;
+
     screen = (char *)SCREEN_BUFFER_START;
     screenAttrs = (char *)ATTRS_BUFFER_START;
 
@@ -75,6 +83,9 @@ void main()
     playerY = 0x0480;
     playerAngle = 0x00;
 
+    for (i=0;i<SCREEN_CHAR_WIDTH;i++)
+        for (j=0;j<SCREEN_CHAR_HEIGHT;j++)
+            putSprite(i, j, bushSprite);
 
     while (1) {
 
@@ -92,10 +103,24 @@ void main()
         }
 
         calculateWalls();
-//        fillScreenAttrs(0b00111000);
+//        fillScreen((char)0xaa);
         renderWalls();
     }
 }
+
+void putSprite(unsigned char x, unsigned char y, char *sprite) {
+
+    unsigned int pos;
+    unsigned int i;
+
+    pos = ((y & 0b00000111) << 5) | ((y & 0b00011000) << 8) | x;
+
+    for (i = 0; i < 8; i++ ) {
+        screen[pos] = sprite[i];
+        pos += 0x0100;
+    }
+}
+
 
 unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
     unsigned int x = myX;
@@ -135,18 +160,17 @@ void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bott
     unsigned char y;
 
     for (y = 0; y < SCREEN_CHAR_HEIGHT; y++ ){
+//        if ((y > top) && (y < bottom))
+//            putSprite(left, y, bushSprite);
+//        else
+//            putSprite(left, y, textureSprite);
         screenAttrs[left + (SCREEN_CHAR_WIDTH * y)] =
-                ((y > top) && (y < bottom)) ? (char)0b01111111 : (char)0b00111000;
+                ((y > top) && (y < bottom)) ? (char)0b01000100 : (char)0b00000000;
     }
 }
 
 void fillScreen(char pattern) {
-    int screenOffset;
-
-    for ( screenOffset = 0; screenOffset < SCREEN_BUFFER_SIZE; screenOffset++ )
-    {
-        screen[screenOffset] = pattern;
-    }
+    memset(screen, pattern, SCREEN_BUFFER_SIZE);
 }
 
 void fillScreenAttrs(char pattern) {
