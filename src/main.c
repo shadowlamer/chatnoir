@@ -90,10 +90,12 @@ void main()
     while (1) {
 
         if (joystickKeysPort & 0b00000100) {
-            playerY += 100;
+            playerX += sine[(playerAngle + 64) & 0xff];
+            playerY += sine[playerAngle];
         }
         if (joystickKeysPort & 0b00001000) {
-            playerY -= 100;
+            playerX -= sine[(playerAngle + 64) & 0xff];
+            playerY -= sine[playerAngle];
         }
         if (joystickKeysPort & 0b00000010) {
             playerAngle += 5;
