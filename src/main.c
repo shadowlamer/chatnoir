@@ -51,16 +51,18 @@ const char sine[256] = {   0,   3,   6,   9,  12,  16,  19,  22,  25,  28,  31, 
 
 __sfr __banked __at 0xf7fe joystickKeysPort;
 
-long int playerX;
-long int playerY;
+unsigned int playerX;
+unsigned int playerY;
+
+unsigned char playerAngle;
 
 void fillScreen(char pattern);
 void fillScreenAttrs(char pattern);
 void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bottom);
 void renderWalls();
 void calculateWalls();
-long int traceRay(long int myX, long int myY, unsigned char angle);
-char getMapAt(long int x, long int y);
+unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle);
+char getMapAt(unsigned int x, unsigned int y);
 
 void main()
 {
@@ -69,44 +71,45 @@ void main()
 
     fillScreen((char)0xaa);
 
-    playerX = (4 << 8);
-    playerY = (4 << 8);
+    playerX = 0x0480;
+    playerY = 0x0480;
+    playerAngle = 0x00;
 
 
     while (1) {
 
-        if (joystickKeysPort & 0b00001000) {
-            playerX += 100;
-        }
         if (joystickKeysPort & 0b00000100) {
-            playerX -= 100;
-        }
-        if (joystickKeysPort & 0b00000010) {
             playerY += 100;
         }
-        if (joystickKeysPort & 0b00000001) {
+        if (joystickKeysPort & 0b00001000) {
             playerY -= 100;
+        }
+        if (joystickKeysPort & 0b00000010) {
+            playerAngle += 5;
+        }
+        if (joystickKeysPort & 0b00000001) {
+            playerAngle -= 5;
         }
 
         calculateWalls();
-        fillScreenAttrs(0b00111000);
+//        fillScreenAttrs(0b00111000);
         renderWalls();
     }
 }
 
-long int traceRay(long int myX, long int myY, unsigned char angle) {
-    long int x = myX;
-    long int y = myY;
-    long int ray = 0;
+unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
+    unsigned int x = myX;
+    unsigned int y = myY;
+    unsigned int ray = 0;
     while (getMapAt(x, y) == 0 && ray < 10000) {
-        x += sine[angle + 64];
+        x += sine[(angle + 64) & 0xff];
         y += sine[angle];
-        ray += 256;
+        ray++;
     }
     return ray;
 }
 
-char getMapAt(long int x, long int y){
+char getMapAt(unsigned int x, unsigned int y){
     unsigned char mapX = ( x >> 8 ) & 0xff;
     unsigned char mapY = ( y >> 8 ) & 0xff;
     return map[mapY][mapX];
@@ -116,26 +119,24 @@ char getMapAt(long int x, long int y){
 void renderWalls() {
     int i;
     for (i=0; i<SCREEN_CHAR_WIDTH; i++) {
-        drawColumnOfAttrs(i, wallRenderBuffer[i], wallRenderBuffer[i]);
+        drawColumnOfAttrs(i, wallRenderBuffer[i], SCREEN_CHAR_HEIGHT - wallRenderBuffer[i] - 1);
     }
 }
+
 
 void calculateWalls() {
     int i;
     for (i=0; i<SCREEN_CHAR_WIDTH; i++) {
-        wallRenderBuffer[i] = (traceRay(playerX, playerY, i) >> 8) & 0xff;
+        wallRenderBuffer[i] = traceRay(playerX, playerY, i + playerAngle);
     }
 }
 
 void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bottom) {
-    int position;
-    char height = SCREEN_CHAR_HEIGHT - top - bottom;
+    unsigned char y;
 
-    position = (top * SCREEN_CHAR_WIDTH) + left;
-
-    for (height; height > 0; height-- ){
-        screenAttrs[position] = (char)0b11111111;
-        position+=SCREEN_CHAR_WIDTH;
+    for (y = 0; y < SCREEN_CHAR_HEIGHT; y++ ){
+        screenAttrs[left + (SCREEN_CHAR_WIDTH * y)] =
+                ((y > top) && (y < bottom)) ? (char)0b01111111 : (char)0b00111000;
     }
 }
 
