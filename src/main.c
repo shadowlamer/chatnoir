@@ -103,6 +103,10 @@ void main()
 {
     unsigned char i, j;
 
+    unsigned int newX;
+    unsigned int newY;
+
+
     screen = (char *)SCREEN_BUFFER_START;
     screenAttrs = (char *)ATTRS_BUFFER_START;
     font = (char *)0x3c00;
@@ -119,12 +123,20 @@ void main()
 
          if ((joystickKeysPort & 0b00001111)) {
              if (joystickKeysPort & 0b00000100) {
-                 playerX += sine[(playerAngle + 64) & 0xff];
-                 playerY += sine[playerAngle];
+                 newX = playerX + sine[(playerAngle + 64) & 0xff];
+                 newY = playerY + sine[playerAngle];
+                 if (getMapAt( newX, newY) != 1) {
+                     playerX = newX;
+                     playerY = newY;
+                 }
              }
              if (joystickKeysPort & 0b00001000) {
-                 playerX -= sine[(playerAngle + 64) & 0xff];
-                 playerY -= sine[playerAngle];
+                 newX = playerX - sine[(playerAngle + 64) & 0xff];
+                 newY = playerY - sine[playerAngle];
+                 if (getMapAt( newX, newY) != 1) {
+                     playerX = newX;
+                     playerY = newY;
+                 }
              }
              if (joystickKeysPort & 0b00000010) {
                  playerAngle += 5;
@@ -179,12 +191,13 @@ unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
     unsigned int ray = 0;
     unsigned int sin = sine[effAngle];
     unsigned int cos = sine[(effAngle + 64) & 0xff];
+    unsigned char screenCoef = sine[(angle * 2) + 32];
     while (getMapAt(x, y) == 0 && ray < 0x10) {
         x += cos;
         y += sin;
         ray++;
     }
-    return ray;
+    return (ray * screenCoef) >> 7;
 }
 
 char getMapAt(unsigned int x, unsigned int y){
