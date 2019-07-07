@@ -258,20 +258,21 @@ void drawSpriteColumn(unsigned char left, unsigned char distance){
     unsigned char i;
     unsigned int pos = left;
     unsigned char width = wallSizes[distance];
+    unsigned char _width = width;
     unsigned int spritePos = wallSpriteOffsets[distance];
 //    unsigned int spritePos = 0;
     if (( left + width ) > SCREEN_CHAR_WIDTH)
-        width = SCREEN_CHAR_WIDTH - left;
+        _width = SCREEN_CHAR_WIDTH - left;
     for (i = 0; i < 64; i++) {
         if (((pos >> 5) & 0x07) >= distance) {
-            memcpy(screen + pos, bush0 + spritePos, width);
+            memcpy(screen + pos, bush0 + spritePos, _width);
             spritePos += width;
         }
         pos += SCREEN_CHAR_WIDTH;
     }
     for (i = 0; i < 64; i++) {
         if (((pos >> 5) & 0x07) <= (7 - distance)) {
-            memcpy(screen + pos, bush0 + spritePos, width);
+            memcpy(screen + pos, bush0 + spritePos, _width);
             spritePos += width;
         }
         pos += SCREEN_CHAR_WIDTH;
