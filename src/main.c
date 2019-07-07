@@ -23,6 +23,9 @@
 char *screen;
 char *screenAttrs;
 char wallRenderBuffer[WALL_BUFFER_SIZE];
+
+#include <bush0.h>
+
 const char map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
@@ -78,8 +81,10 @@ const char sine[256] = {
 };
 
 const unsigned char bushColors[SCREEN_CHAR_HEIGHT / 2] = {
-        0b01000110, 0b01000100, 0b01000100, 0b00000100, 0b00000100, 0b01000001, 0b01000001, 0b00000001
-};
+1};
+
+const unsigned char wallSizes[8] = {4, 3, 2, 2, 1, 1, 1, 1};
+const unsigned int  wallSpriteOffsets[8] = {0, 512, 848, 1040, 1200, 1264, 1312, 1344};
 
 const unsigned char bushSprite[8] = {104, 88, 40, 8, 18, 22, 26, 84};
 const unsigned char bushTopSprite[8] = {85, 85, 73, 42, 42, 42, 20, 72};
@@ -95,8 +100,9 @@ unsigned char playerAngle;
 
 void fillScreen(char pattern);
 void fastFillScreenWithSprite(char *sprite, unsigned char height);
-void fillScreenAttrs(char pattern);
+void fillScreenAttrs(char pattern, unsigned char startLine, unsigned char lines);
 void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bottom);
+void drawSpriteColumn(unsigned char left, unsigned char distance);
 void renderWalls();
 void calculateWalls();
 unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle);
@@ -109,8 +115,6 @@ unsigned char canExit = 0;
 
 void main()
 {
-    unsigned char i, j;
-
     unsigned char scanline;
 
     unsigned int newX;
@@ -126,8 +130,6 @@ void main()
     playerY = 0x0180;
     playerAngle = 0x00;
 
-    fillScreen((char)0xaa);
-    fastFillScreenWithSprite(bushSprite, SCREEN_CHAR_HEIGHT);
     calculateWalls();
     renderWalls();
 
@@ -167,13 +169,13 @@ void main()
 }
 
 void printNumAt(unsigned char x, unsigned char num) {
-    screenAttrs[SCREEN_CHAR_WIDTH * 0 + x] = 0b01000111;
+//    screenAttrs[SCREEN_CHAR_WIDTH * 0 + x] = 0b01000111;
     putSprite(x, 2, font + (('0' + (num % 10)) * 8));
     num = num / 10;
-    screenAttrs[SCREEN_CHAR_WIDTH * 1 + x] = 0b01000111;
+//    screenAttrs[SCREEN_CHAR_WIDTH * 1 + x] = 0b01000111;
     putSprite(x, 1, font + (('0' + (num % 10)) * 8));
     num = num / 10;
-    screenAttrs[SCREEN_CHAR_WIDTH * 2 + x] = 0b01000111;
+//    screenAttrs[SCREEN_CHAR_WIDTH * 2 + x] = 0b01000111;
     putSprite(x, 0, font + (('0' + (num % 10)) * 8));
 }
 
@@ -214,6 +216,7 @@ unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
         y += sin;
         ray++;
     }
+//    return ray;
     return (ray * screenCoef) >> 7;
 }
 
@@ -226,8 +229,19 @@ char getMapAt(unsigned int x, unsigned int y){
 
 void renderWalls() {
     int i;
-    for (i=0; i<SCREEN_CHAR_WIDTH; i++) {
-        drawColumnOfAttrs(i, wallRenderBuffer[i], SCREEN_CHAR_HEIGHT - wallRenderBuffer[i] - 1);
+    unsigned char wallDistance;
+    unsigned char wallSize;
+//    fillScreenAttrs(j0x00, 0, SCREEN_CHAR_HEIGHT);
+    fillScreen(0x00);
+    fillScreenAttrs(0b00000100, 0, 16);
+//    fillScreenAttrs(0xb00000100, 0, SCREEN_CHAR_HEIGHT);
+    for (i=0; i<SCREEN_CHAR_WIDTH; ) {
+        wallDistance = wallRenderBuffer[i];
+        if (wallDistance > 7) wallDistance = 7;
+        wallSize = wallSizes[wallDistance];
+//        drawColumnOfAttrs(i, wallDistance, SCREEN_CHAR_HEIGHT - wallDistance - 1);
+        drawSpriteColumn(i, wallDistance);
+        i += wallSize;
     }
 }
 
@@ -239,14 +253,39 @@ void calculateWalls() {
     }
 }
 
+
+void drawSpriteColumn(unsigned char left, unsigned char distance){
+    unsigned char i;
+    unsigned int pos = left;
+    unsigned char width = wallSizes[distance];
+    unsigned int spritePos = wallSpriteOffsets[distance];
+//    unsigned int spritePos = 0;
+    if (( left + width ) > SCREEN_CHAR_WIDTH)
+        width = SCREEN_CHAR_WIDTH - left;
+    for (i = 0; i < 64; i++) {
+        if (((pos >> 5) & 0x07) >= distance) {
+            memcpy(screen + pos, bush0 + spritePos, width);
+            spritePos += width;
+        }
+        pos += SCREEN_CHAR_WIDTH;
+    }
+    for (i = 0; i < 64; i++) {
+        if (((pos >> 5) & 0x07) <= (7 - distance)) {
+            memcpy(screen + pos, bush0 + spritePos, width);
+            spritePos += width;
+        }
+        pos += SCREEN_CHAR_WIDTH;
+    }
+//    printNumAt(left, distance);
+}
 void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bottom) {
     unsigned char y;
     unsigned char attr;
 
-    for (y = 0; y < SCREEN_CHAR_HEIGHT; y++ ){
-        attr = ((y > top) && (y < bottom + 1)) ? bushColors[top] : (char)0b00000000;
-//        if (top < 8) attr |= 0b01000000;
-        screenAttrs[left + (SCREEN_CHAR_WIDTH * y)] = attr;
+    for (y = top; y < bottom; y++ ){
+//        attr = ((y > top) && (y < bottom + 1)) ? bushColors[top] : (char)0b00000000;
+//        screenAttrs[left + (SCREEN_CHAR_WIDTH * y)] = attr;
+        screenAttrs[left + (SCREEN_CHAR_WIDTH * y)] = bushColors[top];
     }
 }
 
@@ -254,6 +293,6 @@ void fillScreen(char pattern) {
     memset(screen, pattern, SCREEN_BUFFER_SIZE);
 }
 
-void fillScreenAttrs(char pattern) {
-    memset(screenAttrs, pattern, ATTRS_BUFFER_SIZE);
+void fillScreenAttrs(char pattern, unsigned char startLine, unsigned char lines) {
+    memset(screenAttrs + startLine * SCREEN_CHAR_WIDTH, pattern, lines * SCREEN_CHAR_WIDTH);
 }
