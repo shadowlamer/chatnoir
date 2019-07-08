@@ -23,8 +23,11 @@
 char *screen;
 char *screenAttrs;
 char wallRenderBuffer[WALL_BUFFER_SIZE];
+char *random;
 
 #include <bush0.h>
+#include <ground0.h>
+#include <sky0.h>
 
 const char map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -123,6 +126,7 @@ void main()
 
     screen = (char *)SCREEN_BUFFER_START;
     screenAttrs = (char *)ATTRS_BUFFER_START;
+    random = (char *)1234;
     font = (char *)0x3c00;
 
 
@@ -155,11 +159,11 @@ void main()
                  }
              }
              if (scanline & 0b00000010) {
-                 playerAngle += 5;
+                 playerAngle += 8;
                  playerAngle &= 0xff;
              }
              if (scanline & 0b00000001) {
-                 playerAngle -= 5;
+                 playerAngle -= 8;
                  playerAngle &= 0xff;
              }
              calculateWalls();
@@ -231,10 +235,8 @@ void renderWalls() {
     int i;
     unsigned char wallDistance;
     unsigned char wallSize;
-//    fillScreenAttrs(j0x00, 0, SCREEN_CHAR_HEIGHT);
-    fillScreen(0x00);
-    fillScreenAttrs(0b00000100, 0, 16);
-//    fillScreenAttrs(0xb00000100, 0, SCREEN_CHAR_HEIGHT);
+    fillScreenAttrs(0b00000100, 0, SCREEN_CHAR_HEIGHT);
+//    fillScreen(0x00);
     for (i=0; i<SCREEN_CHAR_WIDTH; ) {
         wallDistance = wallRenderBuffer[i];
         if (wallDistance > 7) wallDistance = 7;
@@ -260,24 +262,34 @@ void drawSpriteColumn(unsigned char left, unsigned char distance){
     unsigned char width = wallSizes[distance];
     unsigned char _width = width;
     unsigned int spritePos = wallSpriteOffsets[distance];
-//    unsigned int spritePos = 0;
+    unsigned int groundPos;
     if (( left + width ) > SCREEN_CHAR_WIDTH)
         _width = SCREEN_CHAR_WIDTH - left;
+//    groundPos = left & 0x07;
     for (i = 0; i < 64; i++) {
         if (((pos >> 5) & 0x07) >= distance) {
             memcpy(screen + pos, bush0 + spritePos, _width);
             spritePos += width;
+        } else {
+            if (random[pos + playerAngle] > 125)
+                screen[pos] = 0x01;
+            else
+                memset(screen + pos, 0x00, _width);
         }
         pos += SCREEN_CHAR_WIDTH;
+//        groundPos += 8;
     }
+    groundPos = left & 0x07;
     for (i = 0; i < 64; i++) {
         if (((pos >> 5) & 0x07) <= (7 - distance)) {
             memcpy(screen + pos, bush0 + spritePos, _width);
             spritePos += width;
+        } else {
+            memcpy(screen + pos, ground0 + groundPos, _width);
         }
         pos += SCREEN_CHAR_WIDTH;
+        groundPos += 8;
     }
-//    printNumAt(left, distance);
 }
 void drawColumnOfAttrs(unsigned char left, unsigned char top, unsigned char bottom) {
     unsigned char y;
