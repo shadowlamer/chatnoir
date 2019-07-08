@@ -22,12 +22,14 @@
 
 char *screen;
 char *screenAttrs;
+char *textArea;
 char wallRenderBuffer[WALL_BUFFER_SIZE];
 char *random;
 
 #include <bush0.h>
 #include <ground0.h>
 #include <sky0.h>
+#include <font1.h>
 
 const char map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -114,6 +116,9 @@ void putSprite(unsigned char x, unsigned char y, char *sprite);
 
 void printNumAt(unsigned char x, unsigned char num);
 
+void printOneLine(unsigned char *s);
+void scrollText();
+
 unsigned char canExit = 0;
 
 void main()
@@ -126,6 +131,7 @@ void main()
 
     screen = (char *)SCREEN_BUFFER_START;
     screenAttrs = (char *)ATTRS_BUFFER_START;
+    textArea = screen + 0x1000;
     random = (char *)1234;
     font = (char *)0x3c00;
 
@@ -133,6 +139,12 @@ void main()
     playerX = 0x0180;
     playerY = 0x0180;
     playerAngle = 0x00;
+
+                //................................
+    printOneLine("Дождь.. Ненавижу дождь. от него");
+    printOneLine("мокнут усы и уши, но самое");
+    printOneLine("главное - он стирает с грязи");
+    printOneLine("следы преступных лап");
 
     calculateWalls();
     renderWalls();
@@ -148,6 +160,9 @@ void main()
                  if (getMapAt( newX, newY) != 1) {
                      playerX = newX;
                      playerY = newY;
+                     printOneLine("Я прошел вперед");
+                 } else {
+                     printOneLine("Я уперся в стену.");
                  }
              }
              if (scanline & 0b00001000) {
@@ -156,18 +171,31 @@ void main()
                  if (getMapAt( newX, newY) != 1) {
                      playerX = newX;
                      playerY = newY;
+                     printOneLine("Я сделал шаг назад.");
+                 } else {
+                                 //................................
+                     printOneLine("Я сделал еще шаг назад и сразу");
+                     printOneLine("же уперся спиной в жесткую стену");
+                     printOneLine("колючего кустарника.");
                  }
              }
              if (scanline & 0b00000010) {
-                 playerAngle += 8;
+                 playerAngle += 16;
                  playerAngle &= 0xff;
+                 printOneLine("Я повернулся направо.");
              }
              if (scanline & 0b00000001) {
-                 playerAngle -= 8;
+                 playerAngle -= 16;
                  playerAngle &= 0xff;
+                             //................................
+                 printOneLine("Я повернулся налево.");
+                 printOneLine("В растерянности я озирался по");
+                 printOneLine("сторонам, но не находил знакомых");
+                 printOneLine("ориентиров");
              }
              calculateWalls();
              renderWalls();
+
         }
     }
 }
@@ -308,4 +336,23 @@ void fillScreen(char pattern) {
 
 void fillScreenAttrs(char pattern, unsigned char startLine, unsigned char lines) {
     memset(screenAttrs + startLine * SCREEN_CHAR_WIDTH, pattern, lines * SCREEN_CHAR_WIDTH);
+}
+
+void printOneLine(unsigned char *s) {
+    unsigned char letter;
+    scrollText();
+    fillScreenAttrs(0b01000101, 16, 8);
+    for (letter=0; letter<SCREEN_CHAR_WIDTH; letter++) {
+        if (letter < strlen(s)) {
+            if (s[letter] < 0xc0)
+                putSprite(letter, 23, font + (s[letter] * 8));
+            else
+                putSprite(letter, 23, font1 + ((s[letter] - 0xc0) * 8));
+        } else
+            putSprite(letter, 23, font + (' ' * 8));
+    }
+}
+
+void scrollText() {
+    memcpy(textArea, textArea + SCREEN_CHAR_WIDTH, 0x800 - SCREEN_CHAR_WIDTH);
 }
