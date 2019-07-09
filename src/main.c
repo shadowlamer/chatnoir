@@ -119,7 +119,7 @@ void printNumAt(unsigned char x, unsigned char num);
 void printOneLine(unsigned char *s);
 void scrollText();
 
-unsigned char canExit = 0;
+unsigned char canExit;
 
 void main()
 {
@@ -128,6 +128,7 @@ void main()
     unsigned int newX;
     unsigned int newY;
 
+    canExit = 0;
 
     screen = (char *)SCREEN_BUFFER_START;
     screenAttrs = (char *)ATTRS_BUFFER_START;
