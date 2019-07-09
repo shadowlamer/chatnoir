@@ -28,7 +28,6 @@ char *random;
 
 #include <bush0.h>
 #include <ground0.h>
-#include <sky0.h>
 #include <font1.h>
 
 const char map[MAP_HEIGHT][MAP_WIDTH] = {
