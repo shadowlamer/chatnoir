@@ -28,8 +28,9 @@ char *random;
 
 #include <bush0.h>
 #include <ground0.h>
-#include <sky0.h>
 #include <font1.h>
+
+#include <zevent.h>
 
 const char map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -67,26 +68,26 @@ const char map[MAP_HEIGHT][MAP_WIDTH] = {
 };
 
 const char sine[256] = {
-       0,   3,   6,   9,  12,  16,  19,  22,  25,  28,  31,  34,  37,  40,  43,  46,
-      49,  51,  54,  57,  60,  63,  65,  68,  71,  73,  76,  78,  81,  83,  85,  88,
-      90,  92,  94,  96,  98, 100, 102, 104, 106, 107, 109, 110, 112, 113, 115, 116,
-     117, 118, 120, 121, 122, 122, 123, 124, 125, 125, 126, 126, 126, 127, 127, 127,
-     127, 127, 127, 127, 126, 126, 126, 125, 125, 124, 123, 122, 122, 121, 120, 118,
-     117, 116, 115, 113, 112, 111, 109, 107, 106, 104, 102, 100,  98,  96,  94,  92,
-      90,  88,  85,  83,  81,  78,  76,  73,  71,  68,  65,  63,  60,  57,  54,  51,
-      49,  46,  43,  40,  37,  34,  31,  28,  25,  22,  19,  16,  12,   9,   6,   3,
-       0,  -3,  -6,  -9, -12, -16, -19, -22, -25, -28, -31, -34, -37, -40, -43, -46,
-     -49, -51, -54, -57, -60, -63, -65, -68, -71, -73, -76, -78, -81, -83, -85, -88,
-     -90, -92, -94, -96, -98,-100,-102,-104,-106,-107,-109,-110,-112,-113,-115,-116,
-    -117,-118,-120,-121,-122,-122,-123,-124,-125,-125,-126,-126,-126,-127,-127,-127,
-    -127,-127,-127,-127,-126,-126,-126,-125,-125,-124,-123,-122,-122,-121,-120,-118,
-    -117,-116,-115,-113,-112,-111,-109,-107,-106,-104,-102,-100, -98, -96, -94, -92,
-     -90, -88, -85, -83, -81, -78, -76, -73, -71, -68, -65, -63, -60, -57, -54, -51,
-     -49, -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12,  -9,  -6,  -3
+        0,   3,   6,   9,  12,  16,  19,  22,  25,  28,  31,  34,  37,  40,  43,  46,
+        49,  51,  54,  57,  60,  63,  65,  68,  71,  73,  76,  78,  81,  83,  85,  88,
+        90,  92,  94,  96,  98, 100, 102, 104, 106, 107, 109, 110, 112, 113, 115, 116,
+        117, 118, 120, 121, 122, 122, 123, 124, 125, 125, 126, 126, 126, 127, 127, 127,
+        127, 127, 127, 127, 126, 126, 126, 125, 125, 124, 123, 122, 122, 121, 120, 118,
+        117, 116, 115, 113, 112, 111, 109, 107, 106, 104, 102, 100,  98,  96,  94,  92,
+        90,  88,  85,  83,  81,  78,  76,  73,  71,  68,  65,  63,  60,  57,  54,  51,
+        49,  46,  43,  40,  37,  34,  31,  28,  25,  22,  19,  16,  12,   9,   6,   3,
+        0,  -3,  -6,  -9, -12, -16, -19, -22, -25, -28, -31, -34, -37, -40, -43, -46,
+        -49, -51, -54, -57, -60, -63, -65, -68, -71, -73, -76, -78, -81, -83, -85, -88,
+        -90, -92, -94, -96, -98,-100,-102,-104,-106,-107,-109,-110,-112,-113,-115,-116,
+        -117,-118,-120,-121,-122,-122,-123,-124,-125,-125,-126,-126,-126,-127,-127,-127,
+        -127,-127,-127,-127,-126,-126,-126,-125,-125,-124,-123,-122,-122,-121,-120,-118,
+        -117,-116,-115,-113,-112,-111,-109,-107,-106,-104,-102,-100, -98, -96, -94, -92,
+        -90, -88, -85, -83, -81, -78, -76, -73, -71, -68, -65, -63, -60, -57, -54, -51,
+        -49, -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12,  -9,  -6,  -3
 };
 
 const unsigned char bushColors[SCREEN_CHAR_HEIGHT / 2] = {
-1};
+        1};
 
 const unsigned char wallSizes[8] = {4, 3, 2, 2, 1, 1, 1, 1};
 const unsigned int  wallSpriteOffsets[8] = {0, 512, 848, 1040, 1200, 1264, 1312, 1344};
@@ -120,6 +121,7 @@ void printOneLine(unsigned char *s);
 void scrollText();
 
 unsigned char canExit;
+unsigned char *msg;
 
 void main()
 {
@@ -141,11 +143,7 @@ void main()
     playerY = 0x0180;
     playerAngle = 0x00;
 
-                //................................
-    printOneLine("Дождь.. Ненавижу дождь. от него");
-    printOneLine("мокнут усы и уши, но самое");
-    printOneLine("главное - он стирает с грязи");
-    printOneLine("следы преступных лап");
+    initEvents();
 
     calculateWalls();
     renderWalls();
@@ -155,47 +153,47 @@ void main()
         scanline = joystickKeysPort & 0x0f ^ 0x0f;
 
         if (scanline != 0) {
-             if (scanline & 0b00000100) {
-                 newX = playerX + sine[(playerAngle + 64) & 0xff];
-                 newY = playerY + sine[playerAngle];
-                 if (getMapAt( newX, newY) != 1) {
-                     playerX = newX;
-                     playerY = newY;
-                     printOneLine("Я прошел вперед");
-                 } else {
-                     printOneLine("Я уперся в стену.");
-                 }
-             }
-             if (scanline & 0b00001000) {
-                 newX = playerX - sine[(playerAngle + 64) & 0xff];
-                 newY = playerY - sine[playerAngle];
-                 if (getMapAt( newX, newY) != 1) {
-                     playerX = newX;
-                     playerY = newY;
-                     printOneLine("Я сделал шаг назад.");
-                 } else {
-                                 //................................
-                     printOneLine("Я сделал еще шаг назад и сразу");
-                     printOneLine("же уперся спиной в жесткую стену");
-                     printOneLine("колючего кустарника.");
-                 }
-             }
-             if (scanline & 0b00000010) {
-                 playerAngle += 16;
-                 playerAngle &= 0xff;
-                 printOneLine("Я повернулся направо.");
-             }
-             if (scanline & 0b00000001) {
-                 playerAngle -= 16;
-                 playerAngle &= 0xff;
-                             //................................
-                 printOneLine("Я повернулся налево.");
-                 printOneLine("В растерянности я озирался по");
-                 printOneLine("сторонам, но не находил знакомых");
-                 printOneLine("ориентиров");
-             }
-             calculateWalls();
-             renderWalls();
+            if (scanline & 0b00000100) {
+                newX = playerX + sine[(playerAngle + 64) & 0xff];
+                newY = playerY + sine[playerAngle];
+                if (getMapAt( newX, newY) != 1) {
+                    playerX = newX;
+                    playerY = newY;
+                    castEvent(EVT_MOVE_FORWARD);
+                } else {
+                    castEvent(EVT_STUCK_FORWARD);
+                }
+            }
+            if (scanline & 0b00001000) {
+                newX = playerX - sine[(playerAngle + 64) & 0xff];
+                newY = playerY - sine[playerAngle];
+                if (getMapAt( newX, newY) != 1) {
+                    playerX = newX;
+                    playerY = newY;
+                    castEvent(EVT_MOVE_BACKWARD);
+                } else {
+                    castEvent(EVT_STUCK_BACKWARD);
+                }
+            }
+            if (scanline & 0b00000010) {
+                playerAngle += 32;
+                playerAngle &= 0xff;
+                castEvent(EVT_TURN_RIGHT);
+            }
+            if (scanline & 0b00000001) {
+                playerAngle -= 32;
+                playerAngle &= 0xff;
+                castEvent(EVT_TURN_LEFT);
+            }
+
+
+            calculateWalls();
+
+            while ((msg=describeEvent()) != null) {
+                printOneLine(msg);
+            }
+
+            renderWalls();
 
         }
     }
