@@ -1,3 +1,6 @@
+#ifndef YRGB2019_GROUND0_H
+#define YRGB2019_GROUND0_H
+
 const unsigned char ground0[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 170, 170, 170, 170, 170, 170, 170, 170, 
 15, 3, 2, 8, 15, 3, 2, 8, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -33,3 +36,5 @@ const unsigned char ground0[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 
 };
+
+#endif //YRGB2019_BUSH0_H

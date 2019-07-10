@@ -1,3 +1,7 @@
+#ifndef YRGB2019_FONT1_H
+#define YRGB2019_FONT1_H
+
+
 const unsigned char font1[] = {
 0, 60, 66, 66, 126, 66, 66, 0, 
 0, 126, 64, 124, 66, 66, 124, 0, 
@@ -63,5 +67,6 @@ const unsigned char font1[] = {
 0, 0, 28, 34, 14, 34, 28, 0, 
 0, 0, 76, 82, 114, 82, 76, 0, 
 0, 0, 30, 34, 30, 18, 34, 0, 
-
 };
+
+#endif //YRGB2019_BUSH0_H

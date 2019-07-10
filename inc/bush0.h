@@ -1,3 +1,7 @@
+#ifndef YRGB2019_BUSH0_H
+#define YRGB2019_BUSH0_H
+
+
 const unsigned char bush0[] = {
 0, 33, 128, 0, 0, 5, 176, 224, 8, 83, 142, 0, 2, 139, 152, 48, 
 193, 41, 161, 48, 0, 177, 200, 64, 99, 13, 199, 40, 8, 7, 156, 128, 
@@ -94,3 +98,5 @@ const unsigned char bush0[] = {
 
 
 };
+
+#endif //YRGB2019_BUSH0_H
