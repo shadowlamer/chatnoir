@@ -11,4 +11,6 @@
 
 extern __at (RANDOM_BUFFER_START) char random[];
 
+unsigned char rand();
+
 #endif //YRGB2019_TOOLS_H
