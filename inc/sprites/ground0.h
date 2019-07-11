@@ -37,4 +37,4 @@ const unsigned char ground0[] = {
 
 };
 
-#endif //YRGB2019_BUSH0_H
+#endif //YRGB2019_GROUND0_H
