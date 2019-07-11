@@ -3,7 +3,7 @@
 //
 
 #include <zchat.h>
-#include <font1.h>
+#include <sprites/font1.h>
 
 __at (TEXT_BUFFER_START) char textArea[];
 __at (DEFAULT_FONT_START) char font[];

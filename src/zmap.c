@@ -4,8 +4,8 @@
 
 #include <zmap.h>
 
-#include <bush0.h>
-#include <ground0.h>
+#include <sprites/bush0.h>
+#include <sprites/ground0.h>
 
 char wallRenderBuffer[WALL_BUFFER_SIZE];
 
