@@ -3,14 +3,15 @@
 //
 
 #include <zevent.h>
+#include <quotes.h>
 
-unsigned char lastEvent;
-unsigned char repetitionCounter;
+unsigned int lastEvent;
 
 char *sentences[EVT_MAX_SENTENCES];
 unsigned char sentenceCounter;
 
 void pushSentence(char *s) {
+    if (s == null) return;
     if (sentenceCounter < EVT_MAX_SENTENCES) {
         sentences[sentenceCounter] = s;
         sentenceCounter++;
@@ -26,87 +27,33 @@ char *popSentence() {
 }
 
 void initEvents(){
-      sentenceCounter = 0;
-      repetitionCounter = 0;
+    sentenceCounter = 0;
 }
 
-void castEvent(unsigned char event){
+void castEvent(unsigned int event){
 
-    if (lastEvent == event) {
-        if (repetitionCounter < EVT_NUM_REPETITIONS)
-            repetitionCounter++;
+    if (lastEvent == event) { //set repeat flag
+        event |= EVT_MASK_REPEAT;
     } else {
         lastEvent = event;
-        repetitionCounter = 0;
     }
 
-    switch (repetitionCounter) {
-        case EVT_FIRST_TIME:
-            switch (event) {
-                case EVT_IDLE:
-                    pushSentence("");
-                    break;
-                case EVT_MOVE_FORWARD:
-                    pushSentence("Я шагнул вперед");
-                    break;
-                case EVT_STUCK_FORWARD:
-                    pushSentence("Я ткнулся лицом в стену");
-                    break;
-                case EVT_MOVE_BACKWARD:
-                    pushSentence("Я шагнул назад");
-                    break;
-                case EVT_STUCK_BACKWARD:
-                    pushSentence("Я уперся спиной в стену");
-                    break;
-                case EVT_TURN_LEFT:
-                    pushSentence("Я повернулся налево");
-                    break;
-                case EVT_TURN_RIGHT:
-                    pushSentence("Я повернулся направо");
-                    break;
-                case EVT_LOOK_NORTH:
-                    pushSentence("Я повернулся на север");
-                    break;
-                case EVT_LOOK_SOUTH:
-                    pushSentence("Я повернулся на юг");
-                    break;
-                case EVT_LOOK_EAST:
-                    pushSentence("Я повернулся на восток");
-                    break;
-                case EVT_LOOK_WEST:
-                    pushSentence("Я повернулся на запад");
-                    break;
-            }
-            break;
-        case EVT_SECOND_TIME:
-            pushSentence("И еще раз");
-            break;
-        case EVT_THIRD_TIME:
-            pushSentence("И еще");
-            break;
-        case EVT_MANY_TIMES:
-            switch (event) {
-                case EVT_MOVE_FORWARD:
-                    pushSentence("Я упрямо шагал и шагал вперед");
-                    break;
-                case EVT_STUCK_FORWARD:
-                    pushSentence("Я пытался пробить телом стену");
-                    break;
-                case EVT_MOVE_BACKWARD:
-                    pushSentence("Я пятился и пятился");
-                    break;
-                case EVT_STUCK_BACKWARD:
-                    pushSentence("Я вжимался в стену");
-                    break;
-                case EVT_TURN_LEFT:
-                case EVT_TURN_RIGHT:
-                    pushSentence("Я вертелся на месте");
-                    break;
-            }
-            break;
-    }
+    pushSentence(findQuote(event));
+
+    if (!sentenceCounter) //clear last event if not reported
+        lastEvent = EVT_IDLE;
+
 }
 
 char *describeEvent() {
     return popSentence();
+}
+
+char *findQuote(unsigned int event) {
+    unsigned char i;
+    for (i = 0; i < EVT_NUM_QUOTES; i++) {
+        if (((quotes[i].mask & event) == quotes[i].mask) && (rand() < quotes[i].prob))
+            return quotes[i].quote;
+    }
+    return null;
 }

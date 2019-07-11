@@ -6,3 +6,10 @@
 
 __at (RANDOM_BUFFER_START) char random[];
 
+unsigned int seedPointer;
+
+unsigned char rand() {
+    seedPointer &= 0x07ff;
+    seedPointer++;
+    return RANDOM(seedPointer);
+}
