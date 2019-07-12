@@ -3,11 +3,12 @@
 //
 
 #include <zjoy.h>
-__sfr __banked __at 0xf7fe joystickKeysPort;
+__sfr __at 0xfe joystickKeysPort;
 
 unsigned char getJoy() {
     unsigned char scanline;
     scanline = joystickKeysPort & 0x0f ^ 0x0f;
+    if (!scanline) return JOY_IDLE; //fast return when idle
     if (scanline & 0b00000100) return JOY_FORWARD;
     if (scanline & 0b00001000) return JOY_BACKWARD;
     if (scanline & 0b00000010) return JOY_RIGHT;
