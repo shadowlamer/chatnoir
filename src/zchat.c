@@ -23,6 +23,7 @@ void printOneLine(unsigned char *s) {
     unsigned char letter;
     unsigned char pos;
     scrollText();
+    pos = 0;
     for (letter=0; s[letter] != '\0'; letter++) {
         if (s[letter] == '\n') {
             scrollText();

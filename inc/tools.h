@@ -5,6 +5,8 @@
 #ifndef YRGB2019_TOOLS_H
 #define YRGB2019_TOOLS_H
 
+#define null (void *)0x0000
+
 #define RANDOM_BUFFER_START 0x1234
 
 #define RANDOM(x) random[x]

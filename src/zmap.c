@@ -79,7 +79,7 @@ void renderWalls() {
     int i;
     unsigned char wallDistance;
     unsigned char wallSize;
-    fillScreenAttrs(0b00000100, 0, SCREEN_CHAR_HEIGHT);
+//    fillScreenAttrs(0b00000111, 0, SCREEN_CHAR_HEIGHT);
 //    fillScreen(0x00);
     for (i=0; i<SCREEN_CHAR_WIDTH; ) {
         wallDistance = wallRenderBuffer[i];

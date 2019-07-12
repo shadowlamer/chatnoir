@@ -6,9 +6,23 @@
 #include <zmap.h>
 #include <zchat.h>
 #include <zjoy.h>
+#include <sound.h>
 
 unsigned char canExit;
 unsigned char *msg;
+
+const Note melody[10] = {
+        {.tone = 0,  .time=2000},
+        {.tone = 1,  .time=2000},
+        {.tone = 2,  .time=2000},
+        {.tone = 3,  .time=2000},
+        {.tone = 4,  .time=2000},
+        {.tone = 5,  .time=2000},
+        {.tone = 6,  .time=2000},
+        {.tone = 7,  .time=2000},
+//        {.tone = 9,  .time=2000},
+        {.tone = 255, .time=0},
+};
 
 void main()
 {
@@ -24,12 +38,14 @@ void main()
     playerAngle = 0x00;
 
     initEvents();
+    initSound();
 
     calculateWalls();
     renderWalls();
 
     while (!canExit) {
-
+        if (!isPlaying(0)) play(0, melody);
+        processSound();
         if ((joyAction = getJoy()) != JOY_IDLE ) {
             switch (joyAction) {
                 case JOY_FORWARD:

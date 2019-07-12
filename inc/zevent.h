@@ -7,8 +7,6 @@
 
 #include <tools.h>
 
-#define null (void *)0x0000
-
 #define EVT_MAX_SENTENCES 4
 
 enum {
