@@ -59,7 +59,7 @@ unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
     unsigned int sin = SIN(effAngle);
     unsigned int cos = COS(effAngle);
     unsigned char screenCoef = SIN((angle * 2) + 32);
-    while (getMapAt(x, y) == 0 && ray < 0x10) {
+    while (getMapAt(x, y) == 0 && ray < 0x08) {
         x += cos;
         y += sin;
         ray++;
@@ -76,18 +76,14 @@ char getMapAt(unsigned int x, unsigned int y){
 
 
 void renderWalls() {
-    int i;
+    unsigned char i;
     unsigned char wallDistance;
     unsigned char wallSize;
-//    fillScreenAttrs(0b00000111, 0, SCREEN_CHAR_HEIGHT);
-//    fillScreen(0x00);
     for (i=0; i<SCREEN_CHAR_WIDTH; ) {
         wallDistance = wallRenderBuffer[i];
-        if (wallDistance > 7) wallDistance = 7;
         wallSize = wallSizes[wallDistance];
-//        drawColumnOfAttrs(i, wallDistance, SCREEN_CHAR_HEIGHT - wallDistance - 1);
-        drawSpriteColumn(i, wallDistance);
-        i += wallSize;
+        drawSpriteColumn(i, wallDistance, wallSize, bush0 + wallSpriteOffsets[wallDistance]);
+        i+=wallSize;
     }
 }
 
@@ -99,37 +95,155 @@ void calculateWalls() {
     }
 }
 
+void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char width, unsigned char *spite) {
+    __asm
+    ld      ix,     #0x0002
+    add     ix,     sp              ;Set IX to first param
 
-void drawSpriteColumn(unsigned char left, unsigned char distance){
-    unsigned char i;
-    unsigned int pos = left;
-    unsigned char width = wallSizes[distance];
-    unsigned char _width = width;
-    unsigned int spritePos = wallSpriteOffsets[distance];
-    unsigned int groundPos;
-    if (( left + width ) > SCREEN_CHAR_WIDTH)
-        _width = SCREEN_CHAR_WIDTH - left;
-    for (i = 0; i < 64; i++) {
-        if (((pos >> 5) & 0x07) >= distance) {
-            memcpy(screen + pos, bush0 + spritePos, _width);
-            spritePos += width;
-        } else {
-            if (RANDOM(pos + playerAngle) > 125)
-                screen[pos] = 0x01;
-            else
-                memset(screen + pos, 0x00, _width);
-        }
-        pos += SCREEN_CHAR_WIDTH;
-    }
-    groundPos = left & 0x07;
-    for (i = 0; i < 64; i++) {
-        if (((pos >> 5) & 0x07) <= (7 - distance)) {
-            memcpy(screen + pos, bush0 + spritePos, _width);
-            spritePos += width;
-        } else {
-            memcpy(screen + pos, ground0 + groundPos, _width);
-        }
-        pos += SCREEN_CHAR_WIDTH;
-        groundPos += 8;
-    }
+    ld      a,      0 (ix)
+    add     a,      2 (ix)
+    sub     a,      #0x20
+    jr      c,     width_ok
+    neg
+    add     a,      2 (ix)
+    ld      2 (ix), a           ;Fix last column width
+    width_ok:
+
+    ld      de,     #_screen
+    ld      h,      #0x00
+    ld      l,      0 (ix)
+    add     hl,     de
+    ex      de,     hl              ;Set DE to the top of the column
+
+    ld      l,      3 (ix)
+    ld      h,      4 (ix)
+
+    ld      bc,     #0x0000
+
+;************************* Draw top part ********************
+    ld      a,      #0x40
+    cycle_top:
+    push af
+    push de
+
+    ld      a,      e
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    and     a,      #0x07
+    sub     a,      1 (ix)
+    jr      c,      draw_bg_top
+
+    ld      c,      2 (ix)
+    ldir
+    jr      end_draw_top
+
+    draw_bg_top:
+    ld      a,      #0x00
+    ld      c,      2 (ix)
+    draw_top_bg_loop:
+    ld      (de),   a
+    inc     de
+    dec     c
+    jr      nz,     draw_top_bg_loop
+
+    end_draw_top:
+
+    pop     de
+    ld      a,      #0x20
+    add     a,      e
+    ld      e,      a
+    ld      a,      d
+    adc     a,      #0x00
+    ld      d,      a               ;Move to next screen position
+
+    pop      af
+    dec     a
+    jr      nz,     cycle_top
+
+    ld      a,      #0x08
+    sub     a,      1 (ix)
+    ld      1 (ix), a
+
+    ;************************* Draw bottom part ********************
+    ld      a,      #0x40
+    cycle_bottom:
+    push af
+    push de
+
+    ld      a,      e
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    and     a,      #0x07
+    sub     a,      1 (ix)
+    jr      nc,      draw_bg_bottom
+
+    ld      c,      2 (ix)
+    ldir
+    jr      end_draw_bottom
+
+    draw_bg_bottom:
+    ld      a,      #0x00
+    ld      c,      2 (ix)
+    draw_bottom_bg_loop:
+    ld      (de),   a
+    inc     de
+    dec     c
+    jr      nz,     draw_bottom_bg_loop
+
+    end_draw_bottom:
+
+    pop     de
+    ld      a,      #0x20
+    add     a,      e
+    ld      e,      a
+    ld      a,      d
+    adc     a,      #0x00
+    ld      d,      a               ;Move to next screen position
+
+    pop      af
+    dec     a
+    jr      nz,     cycle_bottom
+
+
+    __endasm;
 }
+
+//void drawSpriteColumn(unsigned char left, unsigned char distance){
+//    unsigned char i;
+//    unsigned int pos = left;
+//    unsigned char width = wallSizes[distance];
+//    unsigned char _width = width;
+//    unsigned int spritePos = wallSpriteOffsets[distance];
+//    unsigned int groundPos;
+//    if (( left + width ) > SCREEN_CHAR_WIDTH)
+//        _width = SCREEN_CHAR_WIDTH - left;
+//    for (i = 0; i < 64; i++) {
+//        if (((pos >> 5) & 0x07) >= distance) {
+//            memcpy(screen + pos, bush0 + spritePos, _width);
+//            spritePos += width;
+//        } else {
+//            if (RANDOM(pos + playerAngle) > 125)
+//                screen[pos] = 0x01;
+//            else
+//                memset(screen + pos, 0x00, _width);
+//        }
+//        pos += SCREEN_CHAR_WIDTH;
+//    }
+//    groundPos = left & 0x07;
+//    for (i = 0; i < 64; i++) {
+//        if (((pos >> 5) & 0x07) <= (7 - distance)) {
+//            memcpy(screen + pos, bush0 + spritePos, _width);
+//            spritePos += width;
+//        } else {
+//            memcpy(screen + pos, ground0 + groundPos, _width);
+//        }
+//        pos += SCREEN_CHAR_WIDTH;
+//        groundPos += 8;
+//    }
+//}

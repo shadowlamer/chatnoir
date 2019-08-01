@@ -18,7 +18,7 @@ extern unsigned int playerX;
 extern unsigned int playerY;
 extern unsigned char playerAngle;
 
-void drawSpriteColumn(unsigned char left, unsigned char distance);
+void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char width, unsigned char *spite);
 void renderWalls();
 void calculateWalls();
 unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle);

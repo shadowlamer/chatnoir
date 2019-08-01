@@ -44,8 +44,8 @@ void main()
     renderWalls();
 
     while (!canExit) {
-        if (!isPlaying(0)) play(0, melody);
-        processSound();
+//        if (!isPlaying(0)) play(0, melody);
+//        processSound();
         if ((joyAction = getJoy()) != JOY_IDLE ) {
             switch (joyAction) {
                 case JOY_FORWARD:
@@ -54,9 +54,9 @@ void main()
                     if (getMapAt(newX, newY) != 1) {
                         playerX = newX;
                         playerY = newY;
-                        castEvent(EVT_MOVE_FORWARD);
+//                        castEvent(EVT_MOVE_FORWARD);
                     } else {
-                        castEvent(EVT_STUCK_FORWARD);
+//                        castEvent(EVT_STUCK_FORWARD);
                     }
                     break;
                 case JOY_BACKWARD:
@@ -65,27 +65,27 @@ void main()
                     if (getMapAt(newX, newY) != 1) {
                         playerX = newX;
                         playerY = newY;
-                        castEvent(EVT_MOVE_BACKWARD);
+//                        castEvent(EVT_MOVE_BACKWARD);
                     } else {
-                        castEvent(EVT_STUCK_BACKWARD);
+//                        castEvent(EVT_STUCK_BACKWARD);
                     }
                     break;
                 case JOY_RIGHT:
-                    playerAngle += 32;
+                    playerAngle += 8;
                     playerAngle &= 0xff;
-                    castEvent(EVT_TURN_RIGHT);
+//                    castEvent(EVT_TURN_RIGHT);
                     break;
                 case JOY_LEFT:
-                    playerAngle -= 32;
+                    playerAngle -= 8;
                     playerAngle &= 0xff;
-                    castEvent(EVT_TURN_LEFT);
+//                    castEvent(EVT_TURN_LEFT);
                     break;
             }
 
             calculateWalls();
-            while ((msg=describeEvent()) != null) {
-                printOneLine(msg);
-            }
+//            while ((msg=describeEvent()) != null) {
+//                printOneLine(msg);
+//            }
             renderWalls();
        }
     }
