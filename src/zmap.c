@@ -59,13 +59,14 @@ unsigned int traceRay(unsigned int myX, unsigned int myY, unsigned char angle) {
     unsigned int sin = SIN(effAngle);
     unsigned int cos = COS(effAngle);
     unsigned char screenCoef = SIN((angle * 2) + 32);
-    while (getMapAt(x, y) == 0 && ray < 0x08) {
+    while (getMapAt(x, y) == 0 && ray < 0x0a) {
         x += cos;
         y += sin;
         ray++;
     }
-//    return ray;
-    return (ray * screenCoef) >> 7;
+    ray = (ray * screenCoef) >> 7;
+    if (ray > 7) ray = 7;
+    return ray;
 }
 
 char getMapAt(unsigned int x, unsigned int y){
