@@ -130,11 +130,11 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     push de
 
     ld      a,      e
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    srl     a
+    rrca
+    rrca
+    rrca
+    rrca
+    rrca
     and     a,      #0x07
     sub     a,      1 (ix)
     jr      c,      draw_bg_top
@@ -182,11 +182,11 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     push de
 
     ld      a,      e
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    srl     a
+    rrca
+    rrca
+    rrca
+    rrca
+    rrca
     and     a,      #0x07
     sub     a,      1 (ix)
     jr      nc,      draw_bg_bottom
