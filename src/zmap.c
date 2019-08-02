@@ -100,13 +100,18 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     ld      ix,     #0x0002
     add     ix,     sp              ;Set IX to first param
 
-    ld      a,      0 (ix)
-    add     a,      2 (ix)
+    ld      bc,     #0x0000
+    push    bc                      ;Allocate 2 bytes in stack (ix-3 and ix-4)
+
+
+    ld      a,      2 (ix)
+    add     a,      0 (ix)
     sub     a,      #0x20
-    jr      c,     width_ok
+    jr      c,      width_ok
+    ld      -3 (ix),a               ;Save sprite overflow for last column
     neg
     add     a,      2 (ix)
-    ld      2 (ix), a           ;Fix last column width
+    ld      2 (ix), a               ;Fix last column width
     width_ok:
 
     ld      de,     #_screen
@@ -117,8 +122,6 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
 
     ld      l,      3 (ix)
     ld      h,      4 (ix)
-
-    ld      bc,     #0x0000
 
 ;************************* Draw top part ********************
     ld      a,      #0x40
@@ -138,10 +141,15 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
 
     ld      c,      2 (ix)
     ldir
+    ld      a,      -3 (ix)         ;Load sprite overflow
+    or      a                       ;Compare with zero
+    jr      z,      end_draw_top
+    add     a,      l               ;Shift sprite pointer when necessary
+    ld      l,      a
     jr      end_draw_top
 
     draw_bg_top:
-    ld      a,      #0x00
+    xor     a
     ld      c,      2 (ix)
     draw_top_bg_loop:
     ld      (de),   a
@@ -185,10 +193,15 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
 
     ld      c,      2 (ix)
     ldir
+    ld      a,      -3 (ix)         ;Load sprite overflow
+    or      a                       ;Compare with zero
+    jr      z,      end_draw_bottom
+    add     a,      l               ;Shift sprite pointer when necessary
+    ld      l,      a
     jr      end_draw_bottom
 
     draw_bg_bottom:
-    ld      a,      #0x00
+    xor     a
     ld      c,      2 (ix)
     draw_bottom_bg_loop:
     ld      (de),   a
@@ -210,7 +223,7 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     dec     a
     jr      nz,     cycle_bottom
 
-
+    pop     de                      ;Deallocate space
     __endasm;
 }
 

@@ -37,8 +37,8 @@ void main()
     playerY = 0x0180;
     playerAngle = 0x00;
 
-    initEvents();
-    initSound();
+//    initEvents();
+//    initSound();
 
     calculateWalls();
     renderWalls();
@@ -71,12 +71,12 @@ void main()
                     }
                     break;
                 case JOY_RIGHT:
-                    playerAngle += 8;
+                    playerAngle += 0x10;
                     playerAngle &= 0xff;
 //                    castEvent(EVT_TURN_RIGHT);
                     break;
                 case JOY_LEFT:
-                    playerAngle -= 8;
+                    playerAngle -= 0x10;
                     playerAngle &= 0xff;
 //                    castEvent(EVT_TURN_LEFT);
                     break;
