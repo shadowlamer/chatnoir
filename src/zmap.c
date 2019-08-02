@@ -103,10 +103,16 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     ld      bc,     #0x0000
     push    bc                      ;Allocate 2 bytes in stack (ix-3 and ix-4)
 
+    ld      hl,     #_ground0
+    ld      a,      0 (ix)
+    and     a,      #0x07
+    add     a,      l
+    ld      l,      a
+    push    hl                      ;Save ground sprite addr in stack (ix-5 and ix-6)
 
     ld      a,      2 (ix)
     add     a,      0 (ix)
-    sub     a,      #0x20
+    sub     a,      #SCREEN_CHAR_WIDTH
     jr      c,      width_ok
     ld      -3 (ix),a               ;Save sprite overflow for last column
     neg
@@ -149,8 +155,23 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     jr      end_draw_top
 
     draw_bg_top:
+
+    push    hl
+    ld      hl, #RANDOM_BUFFER_START - #SCREEN_BUFFER_START
+    ld      a,  (_playerAngle)
+    add     a,  0 (ix)
+    ld      c,  a
+    add     hl, bc
+    add     hl, de
     xor     a
+    cp      (hl)
+    ld      a,  #0x01
+    jr      nc,  sky_star
+    xor     a
+    sky_star:
     ld      c,      2 (ix)
+    pop     hl
+
     draw_top_bg_loop:
     ld      (de),   a
     inc     de
@@ -160,7 +181,7 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     end_draw_top:
 
     pop     de
-    ld      a,      #0x20
+    ld      a,      #SCREEN_CHAR_WIDTH
     add     a,      e
     ld      e,      a
     ld      a,      d
@@ -201,18 +222,28 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     jr      end_draw_bottom
 
     draw_bg_bottom:
-    xor     a
+
+    push    hl
+    ld      h,      -5 (ix)
+    ld      l,      -6 (ix)
     ld      c,      2 (ix)
-    draw_bottom_bg_loop:
-    ld      (de),   a
-    inc     de
-    dec     c
-    jr      nz,     draw_bottom_bg_loop
+    ldir
+    pop     hl
 
     end_draw_bottom:
 
+    push    hl
+    ld      h,      -5 (ix)
+    ld      l,      -6 (ix)
+    ld      c,      #0x08
+    add     hl,     bc
+    ld      -5 (ix),h
+    ld      -6 (ix),l
+    pop     hl
+
+
     pop     de
-    ld      a,      #0x20
+    ld      a,      #SCREEN_CHAR_WIDTH
     add     a,      e
     ld      e,      a
     ld      a,      d
@@ -223,6 +254,7 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     dec     a
     jr      nz,     cycle_bottom
 
+    pop     de
     pop     de                      ;Deallocate space
     __endasm;
 }
