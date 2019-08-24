@@ -259,37 +259,3 @@ void drawSpriteColumn(unsigned char left, unsigned char distance, unsigned char 
     pop     de                      ;Deallocate space
     __endasm;
 }
-
-//void drawSpriteColumn(unsigned char left, unsigned char distance){
-//    unsigned char i;
-//    unsigned int pos = left;
-//    unsigned char width = wallSizes[distance];
-//    unsigned char _width = width;
-//    unsigned int spritePos = wallSpriteOffsets[distance];
-//    unsigned int groundPos;
-//    if (( left + width ) > SCREEN_CHAR_WIDTH)
-//        _width = SCREEN_CHAR_WIDTH - left;
-//    for (i = 0; i < 64; i++) {
-//        if (((pos >> 5) & 0x07) >= distance) {
-//            memcpy(screen + pos, bush0 + spritePos, _width);
-//            spritePos += width;
-//        } else {
-//            if (RANDOM(pos + playerAngle) > 125)
-//                screen[pos] = 0x01;
-//            else
-//                memset(screen + pos, 0x00, _width);
-//        }
-//        pos += SCREEN_CHAR_WIDTH;
-//    }
-//    groundPos = left & 0x07;
-//    for (i = 0; i < 64; i++) {
-//        if (((pos >> 5) & 0x07) <= (7 - distance)) {
-//            memcpy(screen + pos, bush0 + spritePos, _width);
-//            spritePos += width;
-//        } else {
-//            memcpy(screen + pos, ground0 + groundPos, _width);
-//        }
-//        pos += SCREEN_CHAR_WIDTH;
-//        groundPos += 8;
-//    }
-//}
