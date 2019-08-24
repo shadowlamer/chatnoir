@@ -5,8 +5,8 @@
 #ifndef YRGB2019_TRIG_H
 #define YRGB2019_TRIG_H
 
-#define SIN(x) sine[x]
-#define COS(x) sine[(x + 64) & 0xff]
+#define SIN(x) (sine[x & 0xff])
+#define COS(x) (sine[(x + 0x40) & 0xff])
 
 extern const char sine[256];
 
